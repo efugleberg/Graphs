@@ -1,5 +1,5 @@
 # Graphs FAQ
-
+eric
 ## Contents
 
 * [What is a Graph?](#q100)
