@@ -21,9 +21,102 @@ world.printRooms()
 
 player = Player("Name", world.startingRoom)
 
+class Queue():
+    def __init__(self):
+        self.queue = []
+    def enqueue(self, value):
+        self.queue.append(value)
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+    def size(self):
+        return len(self.queue)
+
 # Fill this out
+visited_graph = {}
 traversalPath = []
 
+#  POLYA
+#  Problem:  Get the length of visited_graph to equal length of the roomGraph
+
+#  Set up my bfs function
+def bfs(visited_graph, start):
+    q = Queue()
+    q.enqueue( [start] )
+    visited = set()
+
+    while q.size() > 0:
+        path = q.dequeue()
+        v = path[-1]
+        if v not in visited:
+            visited.add(v)
+            
+            for neighbor in visited_graph[v]:
+                if visited_graph[v][neighbor] == '?':
+                    return path
+            
+            for x in visited_graph[v]:
+                neighbor_room = visited_graph[v][x]
+                path_copy = path.copy()
+                path_copy.append(neighbor_room)
+                q.enqueue(path_copy)
+    return None
+        
+
+#  Run a loop until the visited_graph & roomGraph lengths are equal.
+#  Assuming the body of the loop works and adds unvisited rooms to the
+#  visited_graph, the loop will exit when the player has visited all 500
+#  rooms.
+
+# 2. Build the graph
+
+while len(visited_graph) != len(roomGraph):
+
+    # set the current room
+    current = player.currentRoom.id
+    # print(len(visited_graph))
+
+    # if its not in the visited graph, add it
+    if current not in visited_graph:
+        visited_graph[current] = {idx: '?' for idx in player.currentRoom.getExits()}
+        
+    exit_direction = None
+    
+    
+    for direction in visited_graph[current]:
+        if visited_graph[current][direction] == '?':
+            exit_direction = direction
+            
+            if exit_direction is not None:
+                traversalPath.append(exit_direction)
+                player.travel(exit_direction)
+                # print(exit_direction)
+
+                if player.currentRoom.id not in visited_graph:
+                    visited_graph[player.currentRoom.id] = {
+                        idx: '?' for idx in player.currentRoom.getExits()
+                    }
+
+            visited_graph[current][exit_direction] = player.currentRoom.id
+            reverse = {"n": "s", "s": "n", "e": "w", "w": "e"}
+            # print(reverse)
+            visited_graph[player.currentRoom.id][reverse[exit_direction]] = current
+            current = player.currentRoom.id
+            break
+            
+
+    # 3. Traverse the graph
+
+    traverse_keys = bfs(visited_graph, player.currentRoom.id)
+
+    if traverse_keys != None:
+        for room in traverse_keys:
+            for direction in visited_graph[current]:
+                if visited_graph[current][direction] == room:
+                    traversalPath.append(direction)
+                    player.travel(direction)
 
 
 # TRAVERSAL TEST
